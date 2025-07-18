@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Booking</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        background-color: #f4f7f6;
+        margin: 0;
+        padding: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      .form-container {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 500px;
+      }
+
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 1.5rem;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #555;
+        font-weight: 600;
+      }
+
+      input[type="text"],
+      input[type="email"],
+      input[type="tel"],
+      input[type="date"],
+      input[type="time"],
+      textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box; 
+        font-size: 1rem;
+      }
+
+      textarea {
+        resize: vertical;
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        background-color: #5542f6; 
+        color: white;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #4132c4;
+      }
+
+      button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      #response-message {
+        margin-top: 1rem;
+        text-align: center;
+        font-weight: bold;
+        padding: 10px;
+        border-radius: 4px;
+      }
+
+      .success {
+        color: #155724;
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+      }
+
+      .error {
+        color: #721c24;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="form-container">
+      <h1>Book an Appointment</h1>
+      <form id="booking-form">
+        <label for="given_name">First Name:</label>
+        <input type="text" id="given_name" name="given_name" required />
+
+        <label for="family_name">Last Name:</label>
+        <input type="text" id="family_name" name="family_name" required />
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required />
+
+        <label for="phone_number">Phone Number:</label>
+        <input type="tel" id="phone_number" name="phone_number" required />
+
+        <label for="selected_date">Booking Date:</label>
+        <input type="date" id="selected_date" name="selected_date" required />
+
+        <label for="selected_time">Booking Time (24-hour format):</label>
+        <input type="time" id="selected_time" name="selected_time" required />
+
+        <label for="company_name">Company Name (Optional):</label>
+        <input type="text" id="company_name" name="company_name" />
+
+        <label for="nickname">Nickname (Optional):</label>
+        <input type="text" id="nickname" name="nickname" />
+
+        <label for="note">Note (Optional):</label>
+        <textarea id="note" name="note" rows="4"></textarea>
+
+        <label for="audio_file">Upload Audio File (MP3 or WAV only):</label>
+        <input
+          type="file"
+          id="audio_file"
+          name="audio_file"
+          accept=".mp3, .wav"
+        />
+
+        <button type="submit">Submit Booking</button>
+      </form>
+      <div id="response-message"></div>
+    </div>
+
+    <script>
+      const form = document.getElementById("booking-form");
+      const responseMessage = document.getElementById("response-message");
+      const webhookUrl =
+        "https://n8n.srv898271.hstgr.cloud/webhook/create-square-booking";
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        const submitButton = form.querySelector("button");
+        submitButton.textContent = "Submitting...";
+        submitButton.disabled = true;
+        responseMessage.textContent = "";
+        responseMessage.className = "";
+
+        const formData = new FormData(form);
+
+        const audioFile = form.audio_file.files[0];
+        if (
+          audioFile &&
+          !["audio/mp3", "audio/wav", "audio/mpeg", "audio/x-wav"].includes(
+            audioFile.type
+          )
+        ) {
+          responseMessage.textContent =
+            "Error: Only MP3 or WAV files are allowed.";
+          responseMessage.className = "error";
+          submitButton.textContent = "Submit Booking";
+          submitButton.disabled = false;
+          return;
+        }
+
+        fetch(webhookUrl, {
+          method: "POST",
+          body: formData, 
+        })
+          .then((response) => {
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error("Network response was not ok.");
+          })
+          .then((data) => {
+            console.log("Success:", data);
+            responseMessage.textContent = "Booking submitted successfully!";
+            responseMessage.className = "success";
+            form.reset();
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            responseMessage.textContent =
+              "Error: Could not submit booking. Please check the console and try again.";
+            responseMessage.className = "error";
+          })
+          .finally(() => {
+            submitButton.textContent = "Submit Booking";
+            submitButton.disabled = false;
+          });
+      });
+    </script>
+  </body>
+</html>
