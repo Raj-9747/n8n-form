@@ -105,11 +105,11 @@
     <div class="form-container">
       <h1>Book an Appointment</h1>
       <form id="booking-form">
-        <label for="given_name">First Name:</label>
+        <!-- <label for="given_name">First Name:</label>
         <input type="text" id="given_name" name="given_name" required />
 
         <label for="family_name">Last Name:</label>
-        <input type="text" id="family_name" name="family_name" required />
+        <input type="text" id="family_name" name="family_name" required /> -->
 
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" required />
@@ -123,14 +123,14 @@
         <label for="selected_time">Booking Time (24-hour format):</label>
         <input type="time" id="selected_time" name="selected_time" required />
 
-        <label for="company_name">Company Name (Optional):</label>
+        <!-- <label for="company_name">Company Name (Optional):</label>
         <input type="text" id="company_name" name="company_name" />
 
         <label for="nickname">Nickname (Optional):</label>
         <input type="text" id="nickname" name="nickname" />
 
         <label for="note">Note (Optional):</label>
-        <textarea id="note" name="note" rows="4"></textarea>
+        <textarea id="note" name="note" rows="4"></textarea> -->
 
         <label for="audio_file">Upload Audio File (MP3 or WAV only):</label>
         <input
@@ -149,7 +149,7 @@
       const form = document.getElementById("booking-form");
       const responseMessage = document.getElementById("response-message");
       const webhookUrl =
-        "https://n8n.srv898271.hstgr.cloud/webhook/create-square-booking";
+        "https://n8n.srv898271.hstgr.cloud/webhook-test/create-square-booking";
 
       form.addEventListener("submit", function (event) {
         event.preventDefault();
