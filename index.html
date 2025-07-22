@@ -34,7 +34,7 @@
     <h2>Call Analysis</h2>
 
     <label for="name">Your Name:</label>
-    <input type="text" name="name" id="name" required placeholder="Enter your name" />
+    <input type="text" name="name" id="name"  placeholder="Enter your name" />
 
     <label for="email">Email:</label>
     <input type="email" name="email" id="email" required placeholder="Enter your email" />
@@ -44,6 +44,18 @@
 
     <label for="booking_date">Booking Date:</label>
     <input type="date" name="booking_date" id="booking_date" required />
+
+    <label for="summary">Summary:</label>
+    <input type="text" name="summary" id="summary"  placeholder="Enter summary" />
+
+    <label for="calltype">Call Type:</label>
+    <input type="text" name="calltype" id="calltype" placeholder="Enter call type" />
+
+    <label for="sentiment">Sentiment:</label>
+    <input type="text" name="sentiment" id="sentiment" placeholder="Enter sentiment" />
+
+    <label for="qualityScore">Quality Score:</label>
+    <input type="number" name="qualityScore" id="qualityScore" placeholder="Enter quality score" />
 
     <label for="booking_time">Booking Time:</label>
     <input type="time" name="booking_time" id="booking_time" required />
@@ -120,7 +132,11 @@
         email: document.getElementById("email").value,
         phone: document.getElementById("phone").value,
         booking_date: document.getElementById("booking_date").value,
-        booking_time: document.getElementById("booking_time").value
+        booking_time: document.getElementById("booking_time").value,
+        summary: document.getElementById("summary").value,
+        calltype: document.getElementById("calltype").value,
+        sentiment: document.getElementById("sentiment").value,
+        qualityScore: document.getElementById("qualityScore").value
       };
 
       // Merge with extra fields from lastResponseData (excluding form fields to avoid overwrite)
