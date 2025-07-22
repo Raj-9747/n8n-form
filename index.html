@@ -55,6 +55,10 @@
         position: relative;
       }
 
+      .form-group.hidden {
+        display: none;
+      }
+
       .form-group label {
         display: block;
         margin-bottom: 0.6rem;
@@ -383,12 +387,12 @@
           />
         </div>
 
-        <div class="form-group">
+        <div class="form-group" id="booking-date-group">
           <label for="booking_date">📅 Booking Date:</label>
           <input type="date" name="booking_date" id="booking_date" />
         </div>
 
-        <div class="form-group">
+        <div class="form-group" id="booking-time-group">
           <label for="booking_time">⏰ Booking Time:</label>
           <input type="time" name="booking_time" id="booking_time" />
         </div>
@@ -480,8 +484,31 @@
       const submitAutofilledBtn = document.getElementById(
         "submit-autofilled-btn"
       );
+      const wantToBookCheckbox = document.getElementById("want_to_book");
+      const bookingDateGroup = document.getElementById("booking-date-group");
+      const bookingTimeGroup = document.getElementById("booking-time-group");
 
       let lastResponseData = null;
+
+      // Function to toggle visibility of booking fields
+      function toggleBookingFields() {
+        if (wantToBookCheckbox.checked) {
+          bookingDateGroup.classList.remove("hidden");
+          bookingTimeGroup.classList.remove("hidden");
+        } else {
+          bookingDateGroup.classList.add("hidden");
+          bookingTimeGroup.classList.add("hidden");
+          // Clear values when hidden
+          document.getElementById("booking_date").value = "";
+          document.getElementById("booking_time").value = "";
+        }
+      }
+
+      // Initial call to set visibility based on checkbox state
+      toggleBookingFields();
+
+      // Event listener for checkbox changes
+      wantToBookCheckbox.addEventListener("change", toggleBookingFields);
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -581,7 +608,7 @@
         const booking_date = document.getElementById("booking_date").value;
         const booking_time = document.getElementById("booking_time").value;
 
-        // ✅ Validate booking fields if checkbox is checked
+        // Validate booking fields if checkbox is checked
         if (wantToBook && (!booking_date || !booking_time)) {
           responseBox.style.display = "block";
           responseBox.className = "response-box error";
