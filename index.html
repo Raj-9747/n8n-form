@@ -485,6 +485,28 @@
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
+
+        // Check if "Want to book appointment" is checked
+        const wantToBook = document.getElementById("want_to_book").checked;
+        const bookingDate = document.getElementById("booking_date");
+        const bookingTime = document.getElementById("booking_time");
+
+        // If not checked, remove required attribute
+        if (!wantToBook) {
+          bookingDate.required = false;
+          bookingTime.required = false;
+        } else {
+          bookingDate.required = true;
+          bookingTime.required = true;
+          // If checked, validate fields
+          if (!bookingDate.value || !bookingTime.value) {
+            responseBox.style.display = "block";
+            responseBox.className = "response-box error";
+            responseBox.innerText = "❌ Please select booking date and time.";
+            return;
+          }
+        }
+
         const formData = new FormData(form);
 
         responseBox.style.display = "block";
