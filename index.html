@@ -385,12 +385,12 @@
 
         <div class="form-group">
           <label for="booking_date">📅 Booking Date:</label>
-          <input type="date" name="booking_date" id="booking_date"  />
+          <input type="date" name="booking_date" id="booking_date" />
         </div>
 
         <div class="form-group">
           <label for="booking_time">⏰ Booking Time:</label>
-          <input type="time" name="booking_time" id="booking_time"  />
+          <input type="time" name="booking_time" id="booking_time" />
         </div>
 
         <div class="form-group">
@@ -575,20 +575,32 @@
 
       submitAutofilledBtn.addEventListener("click", async () => {
         let phone = document.getElementById("phone").value.trim();
-        // Remove +1, spaces, dashes, parentheses
         phone = phone.replace(/^\+1\s?|\D/g, "");
+
+        const wantToBook = document.getElementById("want_to_book").checked;
+        const booking_date = document.getElementById("booking_date").value;
+        const booking_time = document.getElementById("booking_time").value;
+
+        // ✅ Validate booking fields if checkbox is checked
+        if (wantToBook && (!booking_date || !booking_time)) {
+          responseBox.style.display = "block";
+          responseBox.className = "response-box error";
+          responseBox.innerText =
+            "❌ Please select booking date and time before submitting.";
+          return;
+        }
 
         const formFields = {
           name: document.getElementById("name").value,
           email: document.getElementById("email").value,
           phone: phone,
-          booking_date: document.getElementById("booking_date").value,
-          booking_time: document.getElementById("booking_time").value,
+          booking_date: booking_date,
+          booking_time: booking_time,
           summary: document.getElementById("summary").value,
           calltype: document.getElementById("calltype").value,
           sentiment: document.getElementById("sentiment").value,
           qualityScore: document.getElementById("qualityScore").value,
-          want_to_book: document.getElementById("want_to_book").checked,
+          want_to_book: wantToBook,
         };
 
         const extraFields = {};
