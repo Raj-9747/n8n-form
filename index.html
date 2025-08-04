@@ -341,7 +341,7 @@
         }
 
         // *** NEW: MANDATORY PRODUCT SELECTION CHECK ***
-        if (!productSelect.value) {
+        if (wantToBookCheckbox.checked && !productSelect.value) {
             responseBox.style.display = "block";
             responseBox.className = "response-box error";
             responseBox.innerText = "❌ Please select a product from the dropdown to create an invoice.";
