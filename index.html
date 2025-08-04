@@ -169,7 +169,6 @@
           <input type="tel" name="phone" id="phone" required placeholder="+1 (555) 123-4567" />
         </div>
 
-        <!-- NEW: Editable AI Results Section -->
         <div id="ai-results-wrapper" class="hidden">
             <h3>AI Analysis Results (Editable)</h3>
             <div class="form-group">
@@ -243,6 +242,7 @@
       const bookingDateGroup = document.getElementById("booking-date-group");
       const bookingTimeGroup = document.getElementById("booking-time-group");
       const aiResultsWrapper = document.getElementById("ai-results-wrapper");
+      const productSelect = document.getElementById("product");
 
       let lastAnalysisData = null; 
 
@@ -277,21 +277,21 @@
               body: formData,
             }
           );
-          const data = await response.json();
-          if (!response.ok) {
-            throw new Error(data.message || 'Analysis failed.');
-          }
           
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Server returned status ${response.status}. Response: ${errorText}`);
+          }
+
+          const data = await response.json();
           lastAnalysisData = data; 
 
-          // Auto-fill the editable fields
           document.getElementById('name').value = data.name || '';
           document.getElementById('summary').value = data.summary || '';
           document.getElementById('calltype').value = data.calltype || '';
           document.getElementById('sentiment').value = data.sentiment || '';
           document.getElementById('qualityScore').value = data.qualityScore || '';
           
-          // Show the editable results section
           aiResultsWrapper.classList.remove("hidden");
           
           responseBox.className = "response-box";
@@ -319,12 +319,13 @@
               sentiment: document.getElementById("sentiment").value,
               qualityScore: document.getElementById("qualityScore").value,
               want_to_book: document.getElementById("want_to_book").checked,
-              product: document.getElementById("product").value
+              product: productSelect.value
           };
       }
       
       // --- STEP 2: Submit for Booking / Invoice ---
       submitBookingBtn.addEventListener("click", async () => {
+        // --- VALIDATION CHECKS ---
         if (!lastAnalysisData) {
           responseBox.style.display = "block";
           responseBox.className = "response-box error";
@@ -337,6 +338,14 @@
           responseBox.className = "response-box error";
           responseBox.innerText = "❌ If booking an appointment, please select a date and time before submitting.";
           return;
+        }
+
+        // *** NEW: MANDATORY PRODUCT SELECTION CHECK ***
+        if (!productSelect.value) {
+            responseBox.style.display = "block";
+            responseBox.className = "response-box error";
+            responseBox.innerText = "❌ Please select a product from the dropdown to create an invoice.";
+            return;
         }
 
         const payload = getFormDataAsObject();
@@ -353,18 +362,28 @@
               body: JSON.stringify(payload),
             }
           );
-          const result = await resp.json();
+          
+          const responseText = await resp.text();
 
           if (!resp.ok) {
-            throw new Error(result.message || 'Submission failed.');
+            throw new Error(`Server error (status ${resp.status}): ${responseText}`);
           }
 
+          if (!responseText) {
+            throw new Error("Server returned a successful but empty response. Check the 'Respond to Webhook' node in your n8n workflow.");
+          }
+          
+          const result = JSON.parse(responseText);
+          
           responseBox.className = "response-box";
           responseBox.innerText = "✅ Submission successful!\n\n" + JSON.stringify(result, null, 2);
 
-          form.reset();
-          aiResultsWrapper.classList.add("hidden");
-          lastAnalysisData = null;
+          // *** NEW: RESET FORM ON SUCCESS ***
+          form.reset(); 
+          aiResultsWrapper.classList.add("hidden"); 
+          lastAnalysisData = null; 
+          toggleBookingFields(); // Hide booking fields after reset
+
         } catch (err) {
           responseBox.className = "response-box error";
           responseBox.innerText = "❌ Error during submission: " + err.message;
