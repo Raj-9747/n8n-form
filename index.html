@@ -270,12 +270,18 @@
 
             <div class="form-group">
                 <label for="email">📧 Email Address:</label>
-                <input type="email" name="email" id="email" required placeholder="your.email@example.com" />
+                <input type="email" name="email" id="email" placeholder="your.email@example.com" />
+            </div>
+
+            <!-- NEW: Country Code Field -->
+            <div class="form-group">
+                <label for="country_code">🌍 Country Code (Optional)</label>
+                <input type="text" name="country_code" id="country_code" placeholder="+1" />
             </div>
 
             <div class="form-group">
                 <label for="phone">📱 Phone Number:</label>
-                <input type="tel" name="phone" id="phone" required placeholder="+1 (555) 123-4567" />
+                <input type="tel" name="phone" id="phone" required placeholder="(555) 123-4567" />
             </div>
 
             <div id="ai-results-wrapper" class="hidden">
@@ -298,29 +304,6 @@
                 </div>
             </div>
 
-            <!-- Date Input (No changes) -->
-            <div class="form-group hidden" id="booking-date-group">
-                <label for="booking_date">📅 Booking Date:</label>
-                <input type="date" name="booking_date" id="booking_date" />
-            </div>
-
-            <!-- NEW "Check Availability" BUTTON -->
-            <div class="form-group hidden" id="check-availability-group">
-                <button type="button" id="check-availability-btn" class="btn btn-primary"
-                    style="width: 100%; background: #3498db; box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);">
-                    🔍 Check Availability
-                </button>
-            </div>
-
-            <!-- Time Select Dropdown (No changes to the element itself) -->
-            <div class="form-group hidden" id="booking-time-group">
-                <label for="booking_time">⏰ Available Slots:</label>
-                <select name="booking_time" id="booking_time">
-                    <option value="" disabled selected>-- Check availability first --</option>
-                </select>
-            </div>
-
-
             <div class="form-group">
                 <div class="checkbox-group">
                     <input type="checkbox" name="want_to_book" id="want_to_book" />
@@ -328,7 +311,29 @@
                 </div>
             </div>
 
-            <div class="form-group">
+            <!-- Date Input -->
+            <div class="form-group hidden" id="booking-date-group">
+                <label for="booking_date">📅 Booking Date:</label>
+                <input type="date" name="booking_date" id="booking_date" />
+            </div>
+
+            <!-- "Check Availability" BUTTON -->
+            <div class="form-group hidden" id="check-availability-group">
+                <button type="button" id="check-availability-btn" class="btn btn-primary"
+                    style="width: 100%; background: #3498db; box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);">
+                    🔍 Check Availability
+                </button>
+            </div>
+
+            <!-- Time Select Dropdown -->
+            <div class="form-group hidden" id="booking-time-group">
+                <label for="booking_time">⏰ Available Slots:</label>
+                <select name="booking_time" id="booking_time">
+                    <option value="" disabled selected>-- Check availability first --</option>
+                </select>
+            </div>
+
+            <div class="form-group hidden" id="product-group">
                 <label for="product">🛍️ Select a Product for Invoice:</label>
                 <select name="product" id="product">
                     <option value="" disabled selected>--Please choose an option--</option>
@@ -363,15 +368,19 @@
         const submitBookingBtn = document.getElementById("submit-booking-btn");
         const wantToBookCheckbox = document.getElementById("want_to_book");
         const aiResultsWrapper = document.getElementById("ai-results-wrapper");
-        const productSelect = document.getElementById("product");
-
-        // --- NEW: Get all booking-related elements ---
+        
         const bookingDateGroup = document.getElementById("booking-date-group");
         const bookingDateInput = document.getElementById("booking_date");
         const checkAvailabilityGroup = document.getElementById("check-availability-group");
         const checkAvailabilityBtn = document.getElementById("check-availability-btn");
         const bookingTimeGroup = document.getElementById("booking-time-group");
         const bookingTimeSelect = document.getElementById("booking_time");
+        
+        const productSelect = document.getElementById("product");
+        const productGroup = document.getElementById("product-group");
+
+        // *** NEW: Get the email input element ***
+        const emailInput = document.getElementById("email");
 
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -381,14 +390,10 @@
 
         let lastAnalysisData = null;
 
-        // --- MODIFIED: Handles fetching and displaying available slots ---
         async function fetchAvailableSlots() {
             const selectedDate = bookingDateInput.value;
-            // Visually show the user we are working
             checkAvailabilityBtn.disabled = true;
             checkAvailabilityBtn.innerHTML = "Checking...";
-
-            // Hide the time dropdown while we fetch, in case it was already visible
             bookingTimeGroup.classList.add("hidden");
 
             try {
@@ -429,14 +434,26 @@
         }
 
         function toggleBookingFields() {
-            if (wantToBookCheckbox.checked) {
+            const isBooking = wantToBookCheckbox.checked;
+
+            // *** NEW: Make email required and update placeholder based on checkbox state ***
+            emailInput.required = isBooking;
+            emailInput.placeholder = isBooking 
+                ? "Email is required for booking" 
+                : "your.email@example.com";
+
+            if (isBooking) {
                 bookingDateGroup.classList.remove("hidden");
+                productGroup.classList.remove("hidden");
             } else {
                 bookingDateGroup.classList.add("hidden");
                 checkAvailabilityGroup.classList.add("hidden");
                 bookingTimeGroup.classList.add("hidden");
+                productGroup.classList.add("hidden"); 
+
                 bookingDateInput.value = "";
                 bookingTimeSelect.innerHTML = '<option value="" disabled selected>-- Check availability first --</option>';
+                productSelect.value = "";
             }
         }
 
@@ -452,9 +469,8 @@
 
         checkAvailabilityBtn.addEventListener('click', fetchAvailableSlots);
 
-        toggleBookingFields();
+        toggleBookingFields(); 
         wantToBookCheckbox.addEventListener("change", toggleBookingFields);
-
 
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -498,8 +514,12 @@
         });
 
         function getFormDataAsObject() {
+            // Get phone and strip non-digits
             let phone = document.getElementById("phone").value.trim();
-            phone = phone.replace(/^\+1\s?|\D/g, "");
+            phone = phone.replace(/\D/g, "");
+
+            // NEW: Get country code and set default to "+1" if empty
+            const countryCode = document.getElementById("country_code").value.trim() || "+1";
 
             const selectedProductOption = productSelect.options[productSelect.selectedIndex];
             const productDuration = selectedProductOption ? selectedProductOption.getAttribute('data-duration-minutes') : null;
@@ -507,6 +527,7 @@
             return {
                 name: document.getElementById("name").value,
                 email: document.getElementById("email").value,
+                country_code: countryCode, // NEW: Added to payload
                 phone: phone,
                 booking_date: document.getElementById("booking_date").value,
                 booking_time: document.getElementById("booking_time").value,
@@ -525,6 +546,15 @@
                 responseBox.style.display = "block";
                 responseBox.className = "response-box error";
                 responseBox.innerText = "❌ Please submit for analysis first before submitting a booking or invoice.";
+                return;
+            }
+
+            // *** NEW: Check for email if the booking checkbox is ticked ***
+            if (wantToBookCheckbox.checked && !emailInput.value.trim()) {
+                responseBox.style.display = "block";
+                responseBox.className = "response-box error";
+                responseBox.innerText = "❌ Email is required to book an appointment and receive an invoice.";
+                emailInput.focus(); // For better user experience, focus the field
                 return;
             }
 
