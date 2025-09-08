@@ -311,6 +311,17 @@
                 </div>
             </div>
 
+            <!-- NEW: Team Member Selection -->
+            <div class="form-group hidden" id="team-member-group">
+                <label for="team_member">👥 Select Team Member:</label>
+                <select name="team_member" id="team_member" required>
+                    <option value="" disabled selected>-- Select a team member --</option>
+                    <option value="TMj6twHbTe_2m1bN">Gauri</option>
+                    <option value="TMxn71LgbtjS_MRZ">Monica</option>
+                    <option value="TMyC12DauGxiI8x-">Shafoli</option>
+                </select>
+            </div>
+
             <!-- Date Input -->
             <div class="form-group hidden" id="booking-date-group">
                 <label for="booking_date">📅 Booking Date:</label>
@@ -337,10 +348,10 @@
                 <label for="product">🛍️ Select a Product for Invoice:</label>
                 <select name="product" id="product">
                     <option value="" disabled selected>--Please choose an option--</option>
-                    <option value="30 Minutes Consultancy|7500" data-duration-minutes="30">30 Minutes Consultancy - 30 minutes $75</option>
-                    <option value="30 minutes Consultancy|10000" data-duration-minutes="30">30 minutes Consultancy- 30 minutes $100</option>
-                    <option value="30-45 minutes Consultancy|15000" data-duration-minutes="45">30-45 minutes Consultancy - 30-45 minutes $150</option>
-                    <option value="1 hour Consultancy|20000" data-duration-minutes="60">1 hour Consultancy - 1 hour $200</option>
+                    <option value="30 Minutes Consultancy|7500" data-duration-minutes="30" data-service-variation-id="ZTFTVZHWEWST32QDUBG5HB3J">30 Minutes Consultancy - 30 minutes $75</option>
+                    <option value="30 minutes Consultancy|10000" data-duration-minutes="30" data-service-variation-id="ZTFTVZHWEWST32QDUBG5HB3J">30 minutes Consultancy- 30 minutes $100</option>
+                    <option value="30-45 minutes Consultancy|15000" data-duration-minutes="45" data-service-variation-id="YCOLKSQEXDUTOLTXTDNGIF4B">30-45 minutes Consultancy - 30-45 minutes $150</option>
+                    <option value="1 hour Consultancy|20000" data-duration-minutes="60" data-service-variation-id="3UIRVKSXA3ZY7BA4RAHCY6VS">1 hour Consultancy - 1 hour $200</option>
                 </select>
             </div>
 
@@ -368,6 +379,9 @@
         const submitBookingBtn = document.getElementById("submit-booking-btn");
         const wantToBookCheckbox = document.getElementById("want_to_book");
         const aiResultsWrapper = document.getElementById("ai-results-wrapper");
+        
+        const teamMemberGroup = document.getElementById("team-member-group");
+        const teamMemberSelect = document.getElementById("team_member");
         
         const bookingDateGroup = document.getElementById("booking-date-group");
         const bookingDateInput = document.getElementById("booking_date");
@@ -443,14 +457,17 @@
                 : "your.email@example.com";
 
             if (isBooking) {
+                teamMemberGroup.classList.remove("hidden");
                 bookingDateGroup.classList.remove("hidden");
                 productGroup.classList.remove("hidden");
             } else {
+                teamMemberGroup.classList.add("hidden");
                 bookingDateGroup.classList.add("hidden");
                 checkAvailabilityGroup.classList.add("hidden");
                 bookingTimeGroup.classList.add("hidden");
                 productGroup.classList.add("hidden"); 
 
+                teamMemberSelect.value = "";
                 bookingDateInput.value = "";
                 bookingTimeSelect.innerHTML = '<option value="" disabled selected>-- Check availability first --</option>';
                 productSelect.value = "";
@@ -523,12 +540,14 @@
 
             const selectedProductOption = productSelect.options[productSelect.selectedIndex];
             const productDuration = selectedProductOption ? selectedProductOption.getAttribute('data-duration-minutes') : null;
+            const serviceVariationId = selectedProductOption ? selectedProductOption.getAttribute('data-service-variation-id') : null;
 
             return {
                 name: document.getElementById("name").value,
                 email: document.getElementById("email").value,
                 country_code: countryCode, // NEW: Added to payload
                 phone: phone,
+                team_member_id: document.getElementById("team_member").value, // NEW: Added team member ID
                 booking_date: document.getElementById("booking_date").value,
                 booking_time: document.getElementById("booking_time").value,
                 summary: document.getElementById("summary").value,
@@ -537,7 +556,8 @@
                 qualityScore: document.getElementById("qualityScore").value,
                 want_to_book: document.getElementById("want_to_book").checked,
                 product: productSelect.value, 
-                product_duration: productDuration 
+                product_duration: productDuration,
+                service_variation_id: serviceVariationId // NEW: Added service variation ID
             };
         }
 
@@ -555,6 +575,15 @@
                 responseBox.className = "response-box error";
                 responseBox.innerText = "❌ Email is required to book an appointment and receive an invoice.";
                 emailInput.focus(); // For better user experience, focus the field
+                return;
+            }
+
+            // *** NEW: Check for team member selection when booking ***
+            if (wantToBookCheckbox.checked && !teamMemberSelect.value) {
+                responseBox.style.display = "block";
+                responseBox.className = "response-box error";
+                responseBox.innerText = "❌ Please select a team member for the appointment.";
+                teamMemberSelect.focus();
                 return;
             }
 
